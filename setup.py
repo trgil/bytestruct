@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='bytestruct',
-    version='1.0.0-alpha.1',
+    version='0.2.0',
     description='A declarative Python library for describing, parsing, and manipulating binary data layouts',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',

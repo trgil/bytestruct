@@ -1,6 +1,6 @@
 # bytestruct
 
- ![Author](https://img.shields.io/badge/Author-Gil_Treibush-brightgreen) ![License](https://img.shields.io/badge/License-MIT-blue.svg) ![Version](https://img.shields.io/badge/Version-1.0.0--alpha.1-violet)
+ ![Author](https://img.shields.io/badge/Author-Gil_Treibush-brightgreen) ![License](https://img.shields.io/badge/License-MIT-blue.svg) ![Version](https://img.shields.io/badge/Version-0.2.0-violet)
 
 **bytestruct** is a lightweight, explicit Python library for parsing and viewing fixed binary layouts (headers, structs, protocol frames) with named field access — without magic or heavy dependencies.
 
