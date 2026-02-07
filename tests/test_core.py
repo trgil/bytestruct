@@ -72,3 +72,4 @@ def test_repr_smoke():
     assert "S(" in repr_str
     assert "sig=" in repr_str
     assert "size=" in repr_str
+

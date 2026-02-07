@@ -85,3 +85,26 @@ def test_bmp_from_real_file():
     assert bmp.data_offset == 54           # most common value
     assert bmp.bit_count in (1, 4, 8, 16, 24, 32)
     assert bmp.compression in (0, 1, 2, 3)   # BI_RGB, BI_RLE8, etc.
+
+
+def test_index_access():
+    # Adjust path to your sample image
+    bmp_path = "tests/sample.bmp"          # ← put your file here or use absolute path
+
+    with open(bmp_path, "rb") as f:
+        header_data = f.read(54)           # BMP v3 header is 54 bytes
+
+    bmp = BmpHeader(header_data)
+
+    assert bmp[0] == b"BM"
+    assert bmp[1] == bmp.file_size
+    assert bmp[4] == bmp.data_offset
+    assert bmp[5] == bmp.header_size   # BITMAPINFOHEADER starts here
+    assert bmp[-1] == bmp.clr_important
+
+    # out of range should raise IndexError
+    with pytest.raises(IndexError):
+        _ = bmp[100]
+
+    with pytest.raises(IndexError):
+        _ = bmp[-100]

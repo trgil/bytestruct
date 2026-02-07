@@ -97,7 +97,7 @@ class ByteStruct:
         else:
             raise ValueError(f"Unknown field type {field_type!r} for {name}")
 
-    # Dict-like access
+    # Key / Index access
     def __getitem__(self, key: Union[str, int]) -> Any:
         if isinstance(key, str):
             return getattr(self, key)
