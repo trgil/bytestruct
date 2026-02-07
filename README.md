@@ -2,25 +2,37 @@
 
  ![Author](https://img.shields.io/badge/Author-Gil_Treibush-brightgreen) ![License](https://img.shields.io/badge/License-MIT-blue.svg) ![Version](https://img.shields.io/badge/Version-1.0.0--alpha.1-violet)
 
-**bytestruct** is a lightweight, declarative Python library for describing, parsing, and manipulating binary data layouts — inspired by C structs.
+**bytestruct** is a lightweight, explicit Python library for parsing and viewing fixed binary layouts (headers, structs, protocol frames) with named field access — without magic or heavy dependencies.
 
-It is built for developers who work with **binary file formats, headers, protocols, and raw byte buffers**, and who want full control without the complexity of heavy parsing frameworks.
+It provides a simple way to:
 
----
+- Define a binary layout once using plain numbers + clear type names
+- Create a class that gives **named attribute access** (`header.file_size`)
+- Work with **zero-copy views** over raw bytes via `memoryview`
+- Keep full control over the underlying buffer
+
+Inspired by C structs, but stays very Pythonic and minimal.
 
 ## Why bytestruct?
 
-Binary formats are everywhere: image headers, audio containers, network packets, embedded protocols, and legacy file formats. Python already provides powerful low-level tools (`struct`, `memoryview`, `bytearray`), but assembling them into *maintainable, readable, and reusable* code is still tedious.
+Parsing binary data in Python often ends up with manual `struct.unpack()`, slicing, and offset math — which is error-prone and hard to maintain.
 
-**bytestruct** fills that gap by providing:
+**bytestruct** offers a clean middle ground:
 
-- A **declarative layout system** for binary data
-- A **C-struct–like mental model**, without magic
-- **Named field access** instead of positional unpacking
-- **Zero-copy views** over raw bytes
-- Clean separation between **layout (class)** and **data (instance)**
+- Declarative layout (once per format)
+- Readable field access instead of tuple unpacking
+- No metaclass magic or runtime surprises
+- Zero dependencies beyond the standard library (`struct`, `typing`)
 
-The goal is not to hide binary details — but to make them *explicit, safe, and pleasant to work with*.
+## Installation
+
+(Once you publish it to PyPI — for now just clone & install locally)
+
+```bash
+git clone https://github.com/trgil/bytestruct.git
+cd bytestruct
+pip install -e .
+```
 
 ---
 
@@ -70,26 +82,34 @@ Instances behave like structured views over raw binary data.
 ## Example
 
 ```python
-from bytestruct import Field, make_struct
+from bytestruct import make_struct_class
 
-BMPHeader = make_struct(
-    "BMPHeader",
-    fields=[
-        Field("signature", "2s"),
-        Field("file_size", "<I"),
-        Field("reserved1", "<H"),
-        Field("reserved2", "<H"),
-        Field("data_offset", "<I"),
-    ]
-)
+BMP_LAYOUT = [
+    ("signature",   2, "raw"),         # 2 bytes raw → bytes object
+    ("file_size",   4, "uint_le"),     # little-endian unsigned 32-bit int
+    ("reserved1",   2, "raw"),
+    ("reserved2",   2, "raw"),
+    ("data_offset", 4, "uint_le"),
+]
 
+BmpHeader = make_struct_class("BmpHeader", BMP_LAYOUT)
+
+# Parse from bytes (e.g. from file)
 with open("image.bmp", "rb") as f:
-    header = BMPHeader.from_file(f)
+    header_bytes = f.read(54)          # BMP v3 header is typically 54 bytes
+    bmp = BmpHeader(header_bytes)
 
-print(header.signature)   # b'BM'
-print(header.file_size)   # integer
+print(bmp.signature)     # b'BM'
+print(bmp.file_size)     # e.g. 12345678 (int)
+print(bmp.data_offset)   # e.g. 54 (int)
 
-header.file_size += 1024  # modify underlying bytes safely
+# Also supports index access
+print(bmp[0])            # same as bmp.signature
+print(bmp[1])            # same as bmp.file_size
+
+# repr is useful for debugging
+print(bmp)
+# BmpHeader(signature=b'BM', file_size=12345678, reserved1=b'\x00\x00', ...)
 ```
 
 No unpacking tuples. No manual slicing. No ambiguity.

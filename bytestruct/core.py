@@ -1,3 +1,47 @@
+"""
+bytestruct - core.py
+
+Lightweight, explicit library for parsing fixed binary layouts (headers, structs,
+protocol frames) with named field access.
+
+Core features:
+- Define layouts as simple list of tuples: (name: str, size: int, type: str)
+- Supported types: "raw", "uint_le", "uint_be", "int_le", "int_be"
+- Creates concrete classes via make_struct_class(name, layout)
+- Attribute access: obj.field_name → returns int or bytes
+- Index access: obj[0], obj[1], ...
+- Zero-copy slicing via memoryview
+- Uses Python's struct module internally for number conversion
+
+Design principles:
+- Explicit over magical
+- No per-instance overhead (layout stored on class)
+- Read-only parsing (mutation support planned for later)
+- Allow extra data after the defined layout (common for files/packets)
+  → users should ideally pass only the relevant portion (e.g. header bytes)
+
+Example usage:
+    BMP_LAYOUT = [
+        ("signature",   2, "raw"),
+        ("file_size",   4, "uint_le"),
+        ("data_offset", 4, "uint_le"),
+    ]
+    BmpHeader = make_struct_class("BmpHeader", BMP_LAYOUT)
+    header = BmpHeader(data_bytes)
+
+Current status:
+- Basic parsing & field access working
+- No write/mutation support yet
+- No validation or advanced types (strings, arrays, nested structs) yet
+
+Future ideas:
+- More field types (float, fixed strings, etc.)
+- .from_file() convenience
+- Mutation + .to_bytes()
+- Validation / constraints
+- Nicer repr / hex view
+
+"""
 
 
 import struct
