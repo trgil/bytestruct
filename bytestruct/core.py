@@ -106,6 +106,37 @@ class ByteStruct:
             return getattr(self, name)
         raise TypeError("Key must be a field name or an integer")
 
+    def copy(self):
+        """Return a new instance with a copy of the underlying data."""
+        # Create a copy of the bytes (not just the memoryview)
+        new_data = bytes(self._data)
+        # Create new instance of the same class
+        return self.__class__(new_data)
+
+    def __copy__(self):
+        """Support shallow copy — but since we want independent data, we make it deep-like."""
+        return self.copy()  # reuse the method above
+
+    def __deepcopy__(self, memo=None):
+        """Explicit deep copy."""
+        return self.copy()
+
+    def copy_with(self, **kwargs):
+        """
+        Create a copy with some fields overridden.
+        Example: header.copy_with(width=1920, height=1080)
+        """
+        # Create a fresh copy
+        new = self.copy()
+
+        for name, value in kwargs.items():
+            if name not in self._name_to_info:
+                raise ValueError(f"Unknown field {name!r}")
+            # We'll need setters for this to work → future step
+            setattr(new, name, value)
+
+        return new
+
     def __repr__(self):
         fields = ", ".join(f"{name}={getattr(self, name)!r}" for name, _, _ in self._layout)
         return f"{self.__class__.__name__}({fields})"
